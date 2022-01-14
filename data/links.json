@@ -1,0 +1,7 @@
+{
+    "steamid": {
+        "url": "https://steamid.io/lookup/",
+        "find_links": "panel-body dl-horizontal",
+        "find_value": "value"
+    }
+}

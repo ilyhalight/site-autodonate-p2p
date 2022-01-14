@@ -1,0 +1,9 @@
+loguru>=0.5.3
+uuid==1.30
+asyncio==3.4.3
+flask>=2.0.2
+pymysql==1.0.2
+PyMySQL[rsa]==1.0.2
+lxml>=4.6.5
+beautifulsoup4==4.10.0
+python-dotenv==0.18.0
