@@ -7,3 +7,4 @@ PyMySQL[rsa]==1.0.2
 lxml>=4.6.5
 beautifulsoup4==4.10.0
 python-dotenv==0.18.0
+gevent==21.12.0

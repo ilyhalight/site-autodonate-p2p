@@ -124,6 +124,9 @@ def autodonate_check_result():
     return html_response
 
 if __name__ == '__main__':
+    from gevent.pywsgi import WSGIServer
     get_env()
     logger.debug(f'Server starting on port {os.environ.get("PORT")}')
-    app.run(host='127.0.0.1', port = os.environ.get("PORT"))
+    # app.run(host='127.0.0.1', port = os.environ.get("PORT"))
+    http_server = WSGIServer(('127.0.0.1', int(os.environ.get("PORT"))), app)
+    http_server.serve_forever()
