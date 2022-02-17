@@ -9,9 +9,9 @@
     <main class="form-signin" style = 'height: 78vh;'>
         <div class="container text-center">
             <a href='/donate' style = 'margin-top: 150px'>Назад</a>
-            <form action="/autodonate/qiwi/post?price={{ price }}" method="post" class="mx-auto bg-light" style = 'max-width: 350px; padding: 15px 15px 15px 15px; border-radius: 18px; box-shadow: 0 13px 68px rgba(8,9,12,.29); margin-top: 100px'>
-                <h1 class="text-center text-dark" style = 'margin: 10px 0 35px'>Автодонат QIWI</h1>
-                <h3 class="text-center text-dark" style = 'margin: 10px 0 35px'>К оплате {{ price}}₽</h3>
+            <form action="/autodonate/{{ name.lower() }}/post?price={{ price }}" method="post" class="mx-auto bg-light" style = 'max-width: 350px; padding: 15px 15px 15px 15px; border-radius: 18px; box-shadow: 0 13px 68px rgba(8,9,12,.29); margin-top: 100px'>
+                <h1 class="text-center text-dark" style = 'margin: 10px 0 35px'>Автодонат {{ name }}</h1>
+                <h3 class="text-center text-dark" style = 'margin: 10px 0 35px'>К оплате {{ price }}₽</h3>
                 <input type="url" name='steam' class="form-control border-0 rounded-3" aria-describedby="steam_link" placeholder="Ссылка на стим" style = 'box-shadow: 0 13px 68px rgba(8,9,12,.29); padding-left: 15px; margin-bottom: 25px'>
                 <input type="submit" value="Сгенерировать" class="btn btn-lg btn-outline-primary" style = 'box-shadow: 0 13px 68px rgba(8,9,12,.29); min-width: 150px; margin-bottom: 10px'>
             </form>
