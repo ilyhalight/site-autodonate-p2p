@@ -1,0 +1,15 @@
+{
+    "30days": {
+        "40.00": "VIP",
+        "75.00": "Premium",
+        "175.00": "MODER",
+        "250.00": "ADMIN"
+    },
+    "permanent": {
+        "70.00": "VIP",
+        "150.00": "Premium",
+        "300.00": "MODER",
+        "500.00": "ADMIN",
+        "30.00": "ClanCreate"
+    }
+}
