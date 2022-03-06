@@ -15,28 +15,64 @@ privillege_array_permanent = privillege_cost['permanent']
 app = Flask(__name__)
 
 def autodonate_give_privillege(uuid, amount, steam):
-    amount = str(f'{amount}0')
-    logger.info(privillege_array_permanent[amount])
+    logger.info(f'Полученная сумма доната - {amount}')
+    amount_2 = None
+    if type(amount) is float or type(amount) is int:
+        amount_2 = amount + 1
+        amount_2 = str(amount_2)
+        amount_2 = amount_2.split('.')
+        amount_2 = amount_2[0]
+        amount_2 = f'{amount_2}.00'
+    amount = str(amount)
+    amount = amount.split('.')
+    amount = amount[0]
+    amount = f'{amount}.00'
     logger.debug('Проверка статуса платежа | Оплачено')
     if uuid in uuid_blacklist:
-        return redirect(f"/autodonate/result?redirect=110100011000011100011110101111001011110010", code=302)
+        return redirect(f"/autodonate/result?redirect=110100011000011100011110101111001011110010", code = 302)
     else:
         uuid_blacklist.append(uuid)
         update_uuid_blacklist(uuid_blacklist)
         logger.debug(f'{uuid} был использован и добавлен в ЧС')
         try:
             if amount in list(privillege_array_30d):
-                csgo_give_privillege(steam, privillege_array_30d[amount], '30d')
-                return redirect(f"/autodonate/result?steam={steam}&days=30&redirect=1100111110111111011111100100", code=302)
+                try:
+                    status = csgo_give_privillege(steam, privillege_array_30d[amount], '30d')
+                    if status is True:
+                        return redirect(f"/autodonate/result?steam={steam}&days=30&redirect=1100111110111111011111100100", code = 302)
+                    return redirect(f"/autodonate/result?steam={steam}&redirect=110111011011111110100110001011000011100100", code = 302) # notbad
+                except:
+                    return redirect(f"/autodonate/result?steam={steam}&redirect=110111011011111110100110001011000011100100", code = 302) # notbad
             elif amount in list(privillege_array_permanent):
-                csgo_give_privillege(steam, privillege_array_permanent[amount], '9999d')
-                return redirect(f"/autodonate/result?steam={steam}&days=9999&redirect=1100111110111111011111100100", code=302)
+                try:
+                    status = csgo_give_privillege(steam, privillege_array_permanent[amount], '9999d')
+                    if status is True:
+                        return redirect(f"/autodonate/result?steam={steam}&days=9999&redirect=1100111110111111011111100100", code = 302)
+                    return redirect(f"/autodonate/result?steam={steam}&redirect=110111011011111110100110001011000011100100", code = 302) # notbad
+                except:
+                    return redirect(f"/autodonate/result?steam={steam}&redirect=110111011011111110100110001011000011100100", code = 302) # notbad
+            elif amount_2 is not None and amount_2 in list(privillege_array_30d):
+                try:
+                    status = csgo_give_privillege(steam, privillege_array_30d[amount_2], '30d')
+                    if status is True:
+                        return redirect(f"/autodonate/result?steam={steam}&days=30&redirect=1100111110111111011111100100", code = 302)
+                    return redirect(f"/autodonate/result?steam={steam}&redirect=110111011011111110100110001011000011100100", code = 302) # notbad
+                except:
+                    return redirect(f"/autodonate/result?steam={steam}&redirect=110111011011111110100110001011000011100100", code = 302) # notbad
+            elif amount_2 is not None and amount_2 in list(privillege_array_permanent):
+                try:
+                    status = csgo_give_privillege(steam, privillege_array_permanent[amount_2], '9999d')
+                    if status is True:
+                        return redirect(f"/autodonate/result?steam={steam}&days=9999&redirect=1100111110111111011111100100", code = 302)
+                    return redirect(f"/autodonate/result?steam={steam}&redirect=110111011011111110100110001011000011100100", code = 302) # notbad
+                except:
+                    return redirect(f"/autodonate/result?steam={steam}&redirect=110111011011111110100110001011000011100100", code = 302) # notbad
             else:
-                return redirect(f"/autodonate/result?steam={steam}&redirect=110111011011111110100110001011000011100100", code=302)
+                return redirect(f"/autodonate/result?steam={steam}&redirect=11011101101111111010011001101101111111010111011101100100", code = 302) # notfound
         except Exception as err:
             logger.error('Не удалось выдать привилегию из-за ошибки:')
             logger.error(err)
-            return redirect(f"/autodonate/result?steam={steam}&redirect=110001011000011100100", code=302)
+            return redirect(f"/autodonate/result?steam={steam}&redirect=110001011000011100100", code = 302)
 
 
 
@@ -71,7 +107,7 @@ def autodonate_qiwi_post():
         return html_response
 
 @app.route('/autodonate/qiwi/check', methods = ['GET'])
-def autodonate_check():
+def autodonate_qiwi_check():
     uuid = request.args.get('uuid')
     steam = request.args.get('steam', default = 'Не введён', type = str)
     pay_url = request.args.get('pay_url')
@@ -79,7 +115,7 @@ def autodonate_check():
     return html_response
 
 @app.route('/autodonate/qiwi/check_payment', methods = ['POST'])
-def autodonate_check_payment():
+def autodonate_qiwi_check_payment():
     if request.method == 'POST':
         uuid = request.args.get('uuid')
         steam = request.args.get('steam', default = 'Не введён', type = str)
@@ -90,14 +126,16 @@ def autodonate_check_payment():
                 result = False
             if result is True and comment == uuid:
                 if status == 'PAID':
-                    autodonate_give_privillege(uuid, amount, steam)
+                    return autodonate_give_privillege(uuid, amount, steam)
                 else:
                     logger.debug('Проверка статуса платежа | Ещё не оплачено')
-                    return redirect(request.referrer, code=302)
+                    return redirect(request.referrer, code = 302)
             else:
-                return redirect(request.referrer, code=302)
+                logger.info('Не удалось найти платёж с таким UUID')
+                return redirect(request.referrer, code = 302)
         else:
-            return redirect(request.referrer, code=302)
+            logger.info('Поле UUID не задано или является пустой строкой')
+            return redirect(request.referrer, code = 302)
     else:
         html_response = '<html><body><h2>Жулик, тебе сюда нельзя!</h2></body></html>'
         return html_response
@@ -119,6 +157,9 @@ def autodonate_check_result():
     elif str(redirect_result) == '110100011000011100011110101111001011110010': # hacker redirect
         logger.debug(f'Попытка с {steam} | Этот UUID уже был оплачен и использован кем-то другим')
         html_response = render_template('request.html', request_color = 'red', request_text = 'Этот UUID уже был оплачен и использован кем-то другим')
+    elif str(redirect_result) == '11011101101111111010011001101101111111010111011101100100': # notfound redirect
+        logger.debug(f'Попытка с {steam} | Не удалось найти подходящую привилегию')
+        html_response = render_template('request.html', request_color = 'red', request_text = 'Не удалось найти подходящую привилегию. Если вы считаете, что произошла ошибка: отпишите в дс/тг/вк (https://fame-community.ru/contact)')
     else:
         logger.debug(f'Произошла ошибка и на аккаунт "{steam}" не была выдана привилегия')
         html_response = render_template('request.html', request_color = 'red', request_text = f'Произошла ошибка и на аккаунт "{steam}" не была выдана привилегия')
@@ -146,14 +187,18 @@ def autodonate_yoomoney_post():
         if price > 25:
             result, pay_url = yoomoney_api.create_payment(payment_type, f'{comment}', price)
             if result is True:
+                logger.info('redirecting...')
                 return redirect(f"/autodonate/yoomoney/check?uuid={comment}&steam={steam[0]}&pay_url={pay_url}", code=302)
             else:
+                logger.warning('Не удалось сгенерировать форму оплаты :(')
                 html_response = render_template('request.html', request_color = 'red', request_text = 'Не удалось сгенерировать форму оплаты :(')
                 return html_response
         else:
+            logger.warning('минимальный платеж от 25 рублей!')
             html_response = render_template('request.html', request_color = 'red', request_text = 'Жулик, минимальный платеж от 25 рублей!')
             return html_response
     else:
+        logger.warning('get запрос заместо post')
         html_response = render_template('request.html', request_color = 'red', request_text = 'Жулик, тебе сюда нельзя!')
         return html_response
 
@@ -163,6 +208,7 @@ def autodonate_yoomoney_check():
     steam = request.args.get('steam', default = 'Не введён', type = str)
     pay_url = request.args.get('pay_url')
     html_response = render_template('autodonate_post_success.html', name = 'YooMoney', pay_url = pay_url, comment = uuid, steam = steam)
+    logger.info('Страница содержащая оплату платежа и его проверку успешно загружена')
     return html_response
 
 @app.route('/autodonate/yoomoney/check_payment', methods = ['POST'])
@@ -175,16 +221,18 @@ def autodonate_yoomoney_check_payment():
                 result, status, comment, amount = yoomoney_api.find_donate(uuid)
             except:
                 result = False
-            if result is True and comment == uuid:
+            if result is True and comment == uuid or result is True and comment == f'Поддержка Fame;\n{uuid}':
                 if status == 'success':
                     return autodonate_give_privillege(uuid, amount, steam)
                 else:
                     logger.debug('Проверка статуса платежа | Ещё не оплачено')
-                    return redirect(request.referrer, code=302)
+                    return redirect(request.referrer, code = 302)
             else:
-                return redirect(request.referrer, code=302)
+                logger.info('Не удалось найти платёж с таким UUID')
+                return redirect(request.referrer, code = 302)
         else:
-            return redirect(request.referrer, code=302)
+            logger.info('Поле UUID не задано или является пустой строкой')
+            return redirect(request.referrer, code = 302)
     else:
         html_response = '<html><body><h2>Жулик, тебе сюда нельзя!</h2></body></html>'
         return html_response
@@ -245,15 +293,16 @@ def autodonate_yoomoney_card_check_payment():
                     return autodonate_give_privillege(uuid, amount, steam)
                 else:
                     logger.debug('Проверка статуса платежа | Ещё не оплачено')
-                    return redirect(request.referrer, code=302)
+                    return redirect(request.referrer, code = 302)
             else:
-                return redirect(request.referrer, code=302)
+                logger.info('Не удалось найти платёж с таким UUID')
+                return redirect(request.referrer, code = 302)
         else:
-            return redirect(request.referrer, code=302)
+            logger.info('Поле UUID не задано или является пустой строкой')
+            return redirect(request.referrer, code = 302)
     else:
         html_response = '<html><body><h2>Жулик, тебе сюда нельзя!</h2></body></html>'
         return html_response
-
 
 
 if __name__ == '__main__':
