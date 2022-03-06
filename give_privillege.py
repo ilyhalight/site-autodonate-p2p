@@ -128,11 +128,20 @@ def csgo_give_privillege(steam_link: str, privillege: str, expiries: str):
             transfer_result = transfer_data_to_db(steamid3, parser[-1], timestamp, privillege, result_timestamp)
             if transfer_result is True:
                 logger.info(f'Выдана привилегия {privillege} (Срок: {expiries}) на сервере CS:GO игроку {parser[-1]} ("https://steamcommunity.com/id/{parser[0]}")')
+                return True
             else:
                 logger.error(f'Не удалось отправить/сохранить данные о новой привилегии игрока на сервере CS:GO в БД')
 
         elif type(data_from_db) is tuple and data_from_db[0] == int(steamid3):
-            logger.info(f'У игрока {parser[-1]} ("https://steamcommunity.com/id/{parser[0]}") уже есть привилегия {data_from_db[4]} (Срок: {data_from_db[5]}) на сервере CS:GO')
+            if int(data_from_db[5]) > int(timestamp):
+                logger.info(f'У игрока {parser[-1]} ("https://steamcommunity.com/id/{parser[0]}") уже есть привилегия {data_from_db[4]} (Срок: {data_from_db[5]}) на сервере CS:GO')
+            else:
+                transfer_result = transfer_data_to_db(steamid3, parser[-1], timestamp, privillege, result_timestamp)
+                if transfer_result is True:
+                    logger.info(f'Выдана привилегия {privillege} (Срок: {expiries}) на сервере CS:GO игроку {parser[-1]} ("https://steamcommunity.com/id/{parser[0]}")')
+                    return True
+                else:
+                    logger.error(f'Не удалось отправить/сохранить данные о новой привилегии игрока на сервере CS:GO в БД')
 
         elif data_from_db is False:
             logger.error(f'Не удалось получить данные из БД')
