@@ -88,6 +88,8 @@ def create_payment(payment_type: str, uuid: str, amount: int):
 def find_donate(uuid: str):
     history_result = operation_history_details(os.environ.get('YOOMONEY_ACCESS_TOKEN'))
     for operations in history_result['operations']:
-        if operations['details'] == uuid:
+        if operations['details'] == uuid or operations['details'] == f'Поддержка Fame;\n{uuid}':
             logger.info('Операция найдена!')
             return True, operations['status'], operations['details'], operations['amount']
+        else:
+            logger.debug(operations['details'])
