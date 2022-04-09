@@ -8,7 +8,11 @@
     <main>
         <div class="container text-center">
             <a href='https://fame-community.ru/donate' style = 'margin-top: 150px'>Назад</a>
+        {% if pid %}
+            <form action="/autodonate/{{ name.lower() }}/check_payment?uuid={{ comment }}&steam={{ steam }}&pid={{ pid }}" target='_self' method="post" class="mx-auto bg-light" style = 'max-width: 400px; padding: 15px 15px 15px 15px; border-radius: 18px; box-shadow: 0 13px 68px rgba(8,9,12,.29); margin-top: 100px'>
+        {% else %}
             <form action="/autodonate/{{ name.lower() }}/check_payment?uuid={{ comment }}&steam={{ steam }}" target='_self' method="post" class="mx-auto bg-light" style = 'max-width: 400px; padding: 15px 15px 15px 15px; border-radius: 18px; box-shadow: 0 13px 68px rgba(8,9,12,.29); margin-top: 100px'>
+        {% endif %}
                 <h1 class="text-center text-dark" style = 'margin: 10px 0 35px'>Автодонат {{ name }}</h1>
                 <h3 class="text-center text-dark" style = 'margin: 10px 0 35px'>Пожалуйста, нажимайте на кнопку "проверить оплату", только после оплаты</h3>
                 <a href='{{ pay_url }}' target='_blank' referrerpolicy="origin" class='text-decoration-none'><button type="button" class="btn btn-lg btn-outline-primary" style = 'box-shadow: 0 13px 68px rgba(8,9,12,.29); min-width: 150px; margin-bottom: 10px'>Оплатить</button></a>
