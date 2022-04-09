@@ -2,6 +2,8 @@ import os
 import requests
 from helpers.privillege_cost import privillege_cost
 from logger import logger
+from helpers.env import get_env
+
 
 def operation_history_details(api_secret_token):
     s = requests.Session()
@@ -18,6 +20,18 @@ def operation_history_details(api_secret_token):
     h = s.post('https://yoomoney.ru/api/operation-history', data = data)
     return h.json()
 
+def operation_details(api_secret_token, operation_id):
+    s = requests.Session()
+    s.headers['authorization'] = 'Bearer ' + api_secret_token
+    s.headers['content-type'] = 'application/x-www-form-urlencoded'
+
+    data = {
+        "operation_id": operation_id,
+    }
+
+    h = s.post('https://yoomoney.ru/api/operation-details', data = data)
+    return h.json()
+
 def generate_payment_form(payment_type: str, uuid: str, sum: int):
     """Создание формы оплаты
 
@@ -28,7 +42,7 @@ def generate_payment_form(payment_type: str, uuid: str, sum: int):
         sum (int): Цена
 
     Returns:
-        h.json: Возращает json ответ API
+        h.url: Ссылка на оплату
     """
     s = requests.Session()
     s.headers['content-type'] = 'application/x-www-form-urlencoded'
@@ -88,8 +102,15 @@ def create_payment(payment_type: str, uuid: str, amount: int):
 def find_donate(uuid: str):
     history_result = operation_history_details(os.environ.get('YOOMONEY_ACCESS_TOKEN'))
     for operations in history_result['operations']:
-        if operations['details'] == uuid or operations['details'] == f'Поддержка Fame;\n{uuid}':
+        if operations['details'] == uuid or operations['details'] == f'Поддержка Fame;\n{uuid}' or operations['details'].startswith(uuid) or operations['details'].split(' ')[5][:-9].replace('№', '') == uuid:
             logger.info('Операция найдена!')
             return True, operations['status'], operations['details'], operations['amount']
         else:
             logger.debug(operations['details'])
+            logger.debug(operations['details'].split(' '))
+            logger.debug(operations['details'].split(' ')[5][:-9].replace('№', ''))
+
+if __name__ == '__main__':
+    get_env()
+    history_result = operation_history_details(os.environ.get('YOOMONEY_ACCESS_TOKEN'))
+    print(history_result)
