@@ -1,4 +1,5 @@
 {
     "save_logs": true,
-    "debug_logs": true
+    "debug_logs": true,
+    "telegram_logs": true
 }
